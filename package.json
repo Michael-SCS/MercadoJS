@@ -1,0 +1,12 @@
+{
+  "name": "minimercado",
+  "version": "1.0.0",
+  "description": "Trabajo #3 T-Evolvers",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Steven Castillo",
+  "license": "ISC"
+}
