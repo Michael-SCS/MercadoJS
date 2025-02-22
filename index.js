@@ -80,7 +80,7 @@ async function datos() {
     return persona;
 }
 
-async function main(params) {
+async function main() {
     let info = await datos()
 
     console.log(`¡Hola! ${info.nombre} Es un gusto tenerte por acá 😊` )
@@ -89,44 +89,61 @@ async function main(params) {
 
 }
 
-async function comprar() {
-    console.log("1️⃣ Frutas")
-    console.log("2️⃣ Verduras")
-    console.log("3️⃣ Lácteos")
-    console.log("4️⃣ Volver al menu principal")
-    let opcion = parseInt(await preguntar("Tenemos gran variedad de productos, elija el que desee agregar a su compra")
-)
-    switch (opcion) {
-        case "1":
-            console.log("Muestra Frutas")
-            mostrarProductosPorCategoria(FRUTAS)
+let carrito = []
 
-            let pregunta1 = await preguntar("¿Deseas comprar algunas de estas deliciosas frutas🍊? (Y/N)")
-            if (pregunta1 == y || pregunta1 == Y) {
-                let productoSeleccionado = await preguntar("Ingrese el nombre del producto que desea comprar")
-                productoSeleccionado = productoSeleccionado.toUpperCase();
-                for (let i = 0; i < productosCategoria.length; i++) {
-                    
-                }
-            }else{
-                comprar();
-            }
-            
 
-            break;
-        case "2":
-            console.log("Muestra verduras")
-            mostrarProductosPorCategoria(Verduras)
-            break;
-        case "3":
-            console.log("Muestra lacteos")
-            mostrarProductosPorCategoria(Lacteos)
-            break;
-        case "4":
-            break;        
-        default:
-            console.log("Elijo una opción incorrecta ❎, Por favor, intentelo nuevamente")
-            break;
+
+async function comprarProducto(categoriaSeleccionada) {
+    console.log(`📦 Productos en la categoría: ${categoriaSeleccionada}`);
+    let productosCategoria = productos.filter(p => p.categoria === categoriaSeleccionada);
+
+    productosCategoria.forEach((producto, index) => {
+        console.log(`${index + 1}. ${producto.Nombre} - Precio: ${producto.precioUnidad} - Stock: ${producto.cantidad}`);
+    });
+
+    let deseaComprar = await preguntar("¿Desea comprar algún producto? (Si/No): ");
+    
+    if (deseaComprar.toUpperCase() !== "SI") {
+        console.log("Volviendo al menú de compras...");
+        return;
     }
+    // Preguntar qué producto desea comprar
+    let nombreProducto = await preguntar("Ingrese el nombre del producto que desea comprar: ");
+    
+    let productoSeleccionado = productosCategoria.find(p => p.Nombre.toUpperCase() === nombreProducto.toUpperCase());
+
+    if (!productoSeleccionado) {
+        console.log("❌ Producto no encontrado. Inténtelo de nuevo.");
+        return comprarProducto(categoriaSeleccionada); // Volver a preguntar
+    }
+
+    let cantidadComprar = parseInt(await preguntar(`¿Cuántas unidades de ${productoSeleccionado.Nombre} desea comprar?: `), 10);
+
+    if (isNaN(cantidadComprar) || cantidadComprar <= 0) {
+        console.log("❌ Cantidad inválida. Inténtelo de nuevo.");
+        return comprarProducto(categoriaSeleccionada);
+    }
+    // Validar si hay suficiente stock
+    if (cantidadComprar > productoSeleccionado.cantidad) {
+        console.log(`❌ No hay suficiente stock. Solo quedan ${productoSeleccionado.cantidad} unidades.`);
+        return comprarProducto(categoriaSeleccionada);
+    }
+    //Validar si el producto ya se encuentra en el carrito
+    let productoEnCarrito = carrito.find(p => p.Nombre === productoSeleccionado.Nombre)
+    if (productoEnCarrito) {
+        // Si el producto ya está en el carrito, aumentamos la cantidad
+        productoEnCarrito.cantidad += cantidadComprar;
+    } else {
+        // Si el producto no está en el carrito, lo agregamos
+        carrito.push({
+            Nombre: productoSeleccionado.Nombre,
+            precioUnidad: productoSeleccionado.precioUnidad,
+            cantidad: cantidadComprar
+        });
+    }
+    // Actualizar stock del producto
+    productoSeleccionado.cantidad -= cantidadComprar;
+
+    console.log(`✅ Se añadieron ${cantidadComprar} unidades de ${productoSeleccionado.Nombre} al carrito.`);
 }
 main()
